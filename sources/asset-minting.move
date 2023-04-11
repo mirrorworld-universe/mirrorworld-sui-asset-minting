@@ -42,8 +42,8 @@ module mirror_world_sui_asset_minting::asset_minting {
     struct CollectionConfig has key {
         id: UID,
         status: u8,
-        singinAuthorityRequired: bool,
-        singingAuthorityPublicKey: vector<u8>,
+        signingAuthorityRequired: bool,
+        signingAuthorityPublicKey: vector<u8>,
         updateAuthority: address,
         collectionId: address
     }
@@ -103,9 +103,9 @@ module mirror_world_sui_asset_minting::asset_minting {
 
     public entry fun create_collection(
         _collectionCreateAuthorityCap: &CollectionCreateAuthorityCap,
-        singingAuthorityPublicKey: vector<u8>,
+        signingAuthorityPublicKey: vector<u8>,
         updateAuthorityAddress: address,
-        isSingingAuthorityRequired: bool,
+        isSigningAuthorityRequired: bool,
         supply: Option<u64>,
         nftMintCapOwnerAddress: address,
         collectionName: vector<u8>,
@@ -122,9 +122,9 @@ module mirror_world_sui_asset_minting::asset_minting {
         let collectionConfig: CollectionConfig = CollectionConfig {
             id: object::new(ctx),
             status: CS_ACTIVE,
-            singingAuthorityPublicKey,
+            signingAuthorityPublicKey: signingAuthorityPublicKey,
             updateAuthority: updateAuthorityAddress,
-            singinAuthorityRequired: isSingingAuthorityRequired,
+            signingAuthorityRequired: isSigningAuthorityRequired,
             collectionId: object::id_address(&collection)
         };
 
@@ -181,14 +181,14 @@ module mirror_world_sui_asset_minting::asset_minting {
     ) {
         assert!(collectionConfig.status == CS_ACTIVE, ER_COLLECTION_IS_NOT_ACTIVE);
 
-        if (collectionConfig.singinAuthorityRequired) {
+        if (collectionConfig.signingAuthorityRequired) {
             assert!(option::is_some(&salt), ER_MISSING_SALT);
             assert!(option::is_some(&signature), ER_MISSING_SIGNATURE);
 
             let hashed_msg = hash::keccak256(&option::extract(&mut salt));
             let is_valid = ed25519::ed25519_verify(
                 &option::extract(&mut signature),
-                &collectionConfig.singingAuthorityPublicKey,
+                &collectionConfig.signingAuthorityPublicKey,
                 &hashed_msg
             );
 
@@ -220,11 +220,11 @@ module mirror_world_sui_asset_minting::asset_minting {
 
     public entry fun update_collection_signing_required(
         collectionCofing: &mut CollectionConfig,
-        isSinginAuthorityRequired: bool,
+        isSigningAuthorityRequired: bool,
         ctx: &mut TxContext
     ) {
         assert!(collectionCofing.updateAuthority == tx_context::sender(ctx), ER_INVALID_UPDATE_AUTHORITY);
 
-        collectionCofing.singinAuthorityRequired = isSinginAuthorityRequired;
+        collectionCofing.signingAuthorityRequired = isSigningAuthorityRequired;
     }
 }
