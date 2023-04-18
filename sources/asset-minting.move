@@ -57,7 +57,7 @@ module mirror_world_sui_asset_minting::asset_minting {
     /// Can be used for authorization of other actions post-creation. It is
     /// vital that this struct is not freely given to any contract, because it
     /// serves as an auth token.
-    struct Witness has drop {}
+    struct AssetWitness has drop {}
 
     struct ASSET_MINTING has drop {}
 
@@ -113,10 +113,11 @@ module mirror_world_sui_asset_minting::asset_minting {
         creatorsList: vector<address>,
         ctx: &mut TxContext
     ) {
-        let delegated_witness = witness::from_witness(Witness {});
+        let delegated_witness = witness::from_witness(AssetWitness {});
+        let assetWitness = AssetWitness {};
 
-        let (collection, mint_cap) = collection::create_with_mint_cap<NFTData>(
-            delegated_witness, supply, ctx
+        let (collection, mint_cap) = collection::create_with_mint_cap<AssetWitness, NFTData>(
+            &assetWitness, supply, ctx
         );
 
         let collectionConfig: CollectionConfig = CollectionConfig {
