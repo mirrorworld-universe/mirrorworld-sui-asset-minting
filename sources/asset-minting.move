@@ -5,10 +5,11 @@ module mirror_world_sui_asset_minting::asset_minting {
     use std::vector;
 
     use nft_protocol::attributes::{Self, Attributes};
-    use nft_protocol::collection;
+    use nft_protocol::collection::{Self, Collection};
     use nft_protocol::creators;
     use nft_protocol::display_info;
-    use nft_protocol::mint_cap::MintCap;
+    use nft_protocol::mint_cap::{Self, MintCap};
+    use nft_protocol::mint_event;
     use nft_protocol::witness;
 
     use sui::display;
@@ -57,7 +58,7 @@ module mirror_world_sui_asset_minting::asset_minting {
     /// Can be used for authorization of other actions post-creation. It is
     /// vital that this struct is not freely given to any contract, because it
     /// serves as an auth token.
-    struct AssetWitness has drop {}
+    struct Witness has drop {}
 
     struct ASSET_MINTING has drop {}
 
@@ -80,7 +81,7 @@ module mirror_world_sui_asset_minting::asset_minting {
         let display = display::new<NFTData>(&publisher, ctx);
         display::add(&mut display, string::utf8(b"name"), string::utf8(b"{name}"));
         display::add(&mut display, string::utf8(b"description"), string::utf8(b"{description}"));
-        display::add(&mut display, string::utf8(b"image_url"), string::utf8(b"https://{url}"));
+        display::add(&mut display, string::utf8(b"image_url"), string::utf8(b"{url}"));
         display::add(&mut display, string::utf8(b"attributes"), string::utf8(b"{attributes}"));
         display::update_version(&mut display);
         transfer::public_transfer(display, tx_context::sender(ctx));
@@ -113,12 +114,23 @@ module mirror_world_sui_asset_minting::asset_minting {
         creatorsList: vector<address>,
         ctx: &mut TxContext
     ) {
-        let delegated_witness = witness::from_witness(AssetWitness {});
-        let assetWitness = AssetWitness {};
+        let delegated_witness = witness::from_witness(Witness {});
 
-        let (collection, mint_cap) = collection::create_with_mint_cap<AssetWitness, NFTData>(
-            &assetWitness, supply, ctx
+        let witness = Witness {};
+
+        let collection: Collection<NFTData> = collection::create(delegated_witness, ctx);
+
+
+        let mint_cap: MintCap<NFTData> = mint_cap::new<Witness, NFTData>(
+            &witness,
+            object::id(&collection),
+            supply,
+            ctx
         );
+
+        // let (collection, mint_cap) = collection::create_with_mint_cap<Witness, NFTData>(
+        //     &witness, supply, ctx
+        // );
 
         let collectionConfig: CollectionConfig = CollectionConfig {
             id: object::new(ctx),
@@ -168,7 +180,7 @@ module mirror_world_sui_asset_minting::asset_minting {
     }
 
     public entry fun mint_nft(
-        _mint_cap: &MintCap<NFTData>,
+        mint_cap: &mut MintCap<NFTData>,
         collectionConfig: &CollectionConfig,
         nftReceiverAddress: address,
         nftName: vector<u8>,
@@ -202,6 +214,12 @@ module mirror_world_sui_asset_minting::asset_minting {
             description: string::utf8(nftDescription),
             url: url::new_unsafe_from_bytes(nftUrl),
             attributes: attributes::from_vec(attribute_keys, attribute_values)
+        };
+
+        if (mint_cap::has_supply(mint_cap)) {
+            mint_event::mint_limited(mint_cap, &nft);
+        } else {
+            mint_event::mint_unlimited(mint_cap, &nft);
         };
 
         transfer::public_transfer(nft, nftReceiverAddress);
