@@ -2,16 +2,15 @@
 name = "mirror-world-sui-asset-minting"
 version = "0.0.1"
 # devnet (https://explorer.sui.io/object/0x394f1e6ac4dcdeb30745b5170668bab6e77c27a925537b4f665a5726483beb1b?network=devnet)
-published-at = "0x394f1e6ac4dcdeb30745b5170668bab6e77c27a925537b4f665a5726483beb1b"
+published-at = "0x4b8563ccf44aef795f0c51780df8e00d5e15c115f263151ceb0c8fae5aeeb892"
 
 [dependencies.Sui]
 git = "https://github.com/MystenLabs/sui.git"
 subdir = "crates/sui-framework/packages/sui-framework"
-rev = "testnet"
+rev = "ae1212baf8f0837e25926d941db3d26a61c1bea2"
 
 [dependencies.NftProtocol]
-local = "../../../MyWork/TestMove/Sui/nft-protocol"
+local = "../../../MyWork/TestMove/Sui/nft-protocol/contracts/nft_protocol"
 
 [addresses]
-mirror_world_sui_asset_minting =  "0x0"
-sui =  "0000000000000000000000000000000000000000000000000000000000000002"
+mirror_world_sui_asset_minting =  "0x4b8563ccf44aef795f0c51780df8e00d5e15c115f263151ceb0c8fae5aeeb892"

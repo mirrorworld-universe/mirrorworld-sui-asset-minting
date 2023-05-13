@@ -10,7 +10,8 @@ module mirror_world_sui_asset_minting::asset_minting {
     use nft_protocol::display_info;
     use nft_protocol::mint_cap::{Self, MintCap};
     use nft_protocol::mint_event;
-    use nft_protocol::witness;
+
+    use ob_permissions::witness;
 
     use sui::display;
     use sui::ed25519;
@@ -216,11 +217,11 @@ module mirror_world_sui_asset_minting::asset_minting {
             attributes: attributes::from_vec(attribute_keys, attribute_values)
         };
 
-        if (mint_cap::has_supply(mint_cap)) {
-            mint_event::mint_limited(mint_cap, &nft);
-        } else {
-            mint_event::mint_unlimited(mint_cap, &nft);
-        };
+        mint_event::emit_mint(
+            witness::from_witness(Witness {}),
+            mint_cap::collection_id(mint_cap),
+            &nft,
+        );
 
         transfer::public_transfer(nft, nftReceiverAddress);
     }

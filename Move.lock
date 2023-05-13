@@ -9,16 +9,66 @@ dependencies = [
 ]
 
 [[move.package]]
+name = "Allowlist"
+source = { local = "../../../MyWork/TestMove/Sui/nft-protocol/contracts/allowlist" }
+
+dependencies = [
+  { name = "Permissions" },
+  { name = "Sui" },
+]
+
+[[move.package]]
+name = "Authlist"
+source = { local = "../../../MyWork/TestMove/Sui/nft-protocol/contracts/authlist" }
+
+dependencies = [
+  { name = "Permissions" },
+  { name = "Sui" },
+]
+
+[[move.package]]
+name = "Kiosk"
+source = { local = "../../../MyWork/TestMove/Sui/nft-protocol/contracts/kiosk" }
+
+dependencies = [
+  { name = "Permissions" },
+  { name = "Request" },
+  { name = "Sui" },
+]
+
+[[move.package]]
+name = "LiquidityLayer"
+source = { local = "../../../MyWork/TestMove/Sui/nft-protocol/contracts/liquidity_layer" }
+
+dependencies = [
+  { name = "Allowlist" },
+  { name = "Authlist" },
+  { name = "Kiosk" },
+  { name = "Permissions" },
+  { name = "Request" },
+  { name = "Sui" },
+  { name = "Utils" },
+]
+
+[[move.package]]
 name = "MoveStdlib"
-source = { git = "https://github.com/MystenLabs/sui.git", rev = "testnet", subdir = "crates/sui-framework/packages/move-stdlib" }
+source = { git = "https://github.com/MystenLabs/sui.git", rev = "ae1212baf8f0837e25926d941db3d26a61c1bea2", subdir = "crates/sui-framework/packages/move-stdlib" }
 
 [[move.package]]
 name = "NftProtocol"
-source = { local = "../../../MyWork/TestMove/Sui/nft-protocol" }
+source = { local = "../../../MyWork/TestMove/Sui/nft-protocol/contracts/nft_protocol" }
 
 dependencies = [
+  { name = "Allowlist" },
+  { name = "Authlist" },
+  { name = "Kiosk" },
+  { name = "LiquidityLayer" },
   { name = "Originmate" },
+  { name = "Permissions" },
+  { name = "Pseudorandom" },
+  { name = "Request" },
   { name = "Sui" },
+  { name = "Utils" },
 ]
 
 [[move.package]]
@@ -30,9 +80,44 @@ dependencies = [
 ]
 
 [[move.package]]
+name = "Permissions"
+source = { local = "../../../MyWork/TestMove/Sui/nft-protocol/contracts/permissions" }
+
+dependencies = [
+  { name = "Sui" },
+  { name = "Utils" },
+]
+
+[[move.package]]
+name = "Pseudorandom"
+source = { local = "../../../MyWork/TestMove/Sui/nft-protocol/contracts/pseudorandom" }
+
+dependencies = [
+  { name = "Sui" },
+]
+
+[[move.package]]
+name = "Request"
+source = { local = "../../../MyWork/TestMove/Sui/nft-protocol/contracts/request" }
+
+dependencies = [
+  { name = "Permissions" },
+  { name = "Sui" },
+]
+
+[[move.package]]
 name = "Sui"
-source = { git = "https://github.com/MystenLabs/sui.git", rev = "testnet", subdir = "crates/sui-framework/packages/sui-framework" }
+source = { git = "https://github.com/MystenLabs/sui.git", rev = "ae1212baf8f0837e25926d941db3d26a61c1bea2", subdir = "crates/sui-framework/packages/sui-framework" }
 
 dependencies = [
   { name = "MoveStdlib" },
+]
+
+[[move.package]]
+name = "Utils"
+source = { local = "../../../MyWork/TestMove/Sui/nft-protocol/contracts/utils" }
+
+dependencies = [
+  { name = "Pseudorandom" },
+  { name = "Sui" },
 ]
