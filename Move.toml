@@ -7,7 +7,7 @@ published-at = "0x4b8563ccf44aef795f0c51780df8e00d5e15c115f263151ceb0c8fae5aeeb8
 [dependencies.Sui]
 git = "https://github.com/MystenLabs/sui.git"
 subdir = "crates/sui-framework/packages/sui-framework"
-rev = "ae1212baf8f0837e25926d941db3d26a61c1bea2"
+rev = "a2af559f9ea21e09ca7e377e3b477fc2b5239fc7"
 
 [dependencies.NftProtocol]
 local = "../../../MyWork/TestMove/Sui/nft-protocol/contracts/nft_protocol"
