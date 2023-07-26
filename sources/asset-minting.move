@@ -28,9 +28,6 @@ module mirror_world_sui_asset_minting::asset_minting {
 
     const VERSION: u64 = 1;
 
-    // ERROR
-    // const ER_INVALID_UPDATE_AUTHORITY: u64 = 30005;
-
     // Erros
     const ENotAdmin: u64 = 1001;
     const EWrongVersion: u64 = 1002;
@@ -50,13 +47,6 @@ module mirror_world_sui_asset_minting::asset_minting {
     const EMintCommissionPaymentReceiverNotFound: u64 = 1016;
     const EInvalidCommsionAmount: u64 = 1017;
     const EInvalidSupply: u64 = 1018;
-
-    // const EWihetlistMintDisbale: u64 = 1007;
-    // const EInvalidMintCount: u64 = 1008;
-    // const ENotWihetlistAddress: u64 = 1009;
-    // const EInvalidLength: u64 = 1010;
-    // const EInvalidIndex: u64 = 1011;
-    // const EUrlDataAlreadyExist: u64 = 1012;
 
     struct AdminCap has key, store {
         id: UID
@@ -225,7 +215,7 @@ module mirror_world_sui_asset_minting::asset_minting {
         collectionDiscription: vector<u8>,
         creatorsList: vector<address>,
         creatorsShareList: vector<u16>,
-        rolity: Option<u16>,
+        royalty: Option<u16>,
         ctx: &mut TxContext
     ) {
         assert!(versionConfig.version == VERSION, EWrongVersion);
@@ -257,11 +247,11 @@ module mirror_world_sui_asset_minting::asset_minting {
             );
 
             // Rolity Share
-            if (!vector::is_empty(&creatorsShareList) && option::is_some(&rolity)) {
+            if (!vector::is_empty(&creatorsShareList) && option::is_some(&royalty)) {
                 let shares = utils::from_vec_to_map(creatorsList, creatorsShareList);
 
                 royalty_strategy_bps::create_domain_and_add_strategy(
-                    dw, &mut collection, royalty::from_shares(shares, ctx), *option::borrow(&rolity), ctx,
+                    dw, &mut collection, royalty::from_shares(shares, ctx), *option::borrow(&royalty), ctx,
                 );
 
                 royalty_strategy_bps::enforce(&mut transfer_policy, &transfer_policy_cap);
