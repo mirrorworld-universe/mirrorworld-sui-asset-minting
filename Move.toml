@@ -1,8 +1,10 @@
 [package]
 name = "mirror-world-sui-asset-minting"
-version = "0.0.1"
+version = "0.0.3"
 # testnet contract deploy transaction (https://suiexplorer.com/txblock/D4GUpZjgLDzzD3YfNzSiSUReiBK4nMijpikrqQ5qF4rk?network=testnet)
-published-at = "0xa80ac31d75a34a792ff5e5d9c3723da86520b580bd6efb78f6d24de7a305c5fc"
+# testnet contract deploy transaction (https://suiexplorer.com/txblock/FppyDHMQJyLxkio6QjP4FJomfFpn3KGM6MDrHpRiadMf?network=testnet) V 0.0.2
+# testnet contract deploy transaction (https://suiexplorer.com/txblock/DWz1Fz42dykisCnm7P9JbJk8cS6KNHh1zn7bFBHJnSQX?network=testnet) V 0.0.3
+published-at = "0x691f2620877f332c744ebf4a17d98d25e3e21be8d18a0c3893092df36d7ac8c3"
 
 [dependencies.Sui]
 git = "https://github.com/MystenLabs/sui.git"
