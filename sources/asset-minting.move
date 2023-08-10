@@ -26,7 +26,7 @@ module mirror_world_sui_asset_minting::asset_minting {
     use sui::tx_context::{Self, TxContext};
     use sui::url::{Self, Url};
 
-    const VERSION: u64 = 1;
+    const VERSION: u64 = 2;
 
     // Erros
     const ENotAdmin: u64 = 1001;
@@ -575,5 +575,118 @@ module mirror_world_sui_asset_minting::asset_minting {
         emit(mintNftEvent);
 
         transfer::public_transfer(nft, nftReceiverAddress);
+    }
+
+    public entry fun mint_nft_with_payment_v2<FT>(
+        versionConfig: &VersionConfig,
+        collectionConfig: &mut CollectionConfig<FT>,
+        collection: &Collection<NFTData>,
+        nftReceiverAddress: address,
+        nftName: vector<u8>,
+        nftDescription: vector<u8>,
+        nftUrl: vector<u8>,
+        attribute_keys: vector<ascii::String>,
+        attribute_values: vector<ascii::String>,
+        salt: Option<vector<u8>>,
+        signature: Option<vector<u8>>,
+        wallet: Coin<FT>,
+        ctx: &mut TxContext
+    ) {
+        assert!(versionConfig.version == VERSION, EWrongVersion);
+        assert!(collectionConfig.collection_id == object::id(collection), EInvalidCollection);
+        assert!(collectionConfig.mint_enable, EMintDisbale);
+
+        if (option::is_some(&collectionConfig.max_supply)) {
+            assert!(
+                collectionConfig.current_supply + 1 <= *option::borrow(&collectionConfig.max_supply),
+                ESupplyExceeded
+            );
+        };
+
+        assert!(collectionConfig.mint_payment_enable, EInvalidMethod);
+
+        if (collectionConfig.signing_authority_required) {
+            assert!(option::is_some(&salt), EMissingSalt);
+            assert!(option::is_some(&signature), EMissingSignature);
+
+            let hashed_msg = hash::keccak256(&option::extract(&mut salt));
+            let is_valid = ed25519::ed25519_verify(
+                &option::extract(&mut signature),
+                &collectionConfig.signing_authority_public_key,
+                &hashed_msg
+            );
+
+            assert!(is_valid == true, EInvalidSigner);
+        };
+
+        // Payment
+
+        assert!(option::is_some(&collectionConfig.mint_payment), EMintPaymentNotFound);
+        assert!(option::is_some(&collectionConfig.mint_payment_receiver), EMintPaymentReceiverNotFound);
+
+        assert!(coin::value(&wallet) >= *option::borrow(&collectionConfig.mint_payment), EInvalidAmount);
+
+        let paymentCoin: Coin<FT> = coin::split(&mut wallet, *option::borrow(&collectionConfig.mint_payment), ctx);
+
+        let withCommission: bool = false;
+        let commissionPaymentCoinId: Option<ID> = option::none<ID>();
+        let paymentCoinId: Option<ID> = option::some(object::id(&paymentCoin));
+
+        if (collectionConfig.mint_commission_enable) {
+            assert!(option::is_some(&collectionConfig.mint_commission_payment), EMintCommissionPaymentNotFound);
+            assert!(
+                option::is_some(&collectionConfig.mint_commission_receiver),
+                EMintCommissionPaymentReceiverNotFound
+            );
+
+            assert!(
+                *option::borrow(&collectionConfig.mint_commission_payment) < *option::borrow(
+                    &collectionConfig.mint_payment
+                ),
+                EInvalidCommsionAmount
+            );
+
+            let commissionPaymentCoin: Coin<FT> = coin::split(
+                &mut paymentCoin,
+                *option::borrow(&collectionConfig.mint_commission_payment),
+                ctx
+            );
+
+            withCommission = true;
+            commissionPaymentCoinId = option::some(object::id(&commissionPaymentCoin));
+
+            transfer::public_transfer(
+                commissionPaymentCoin,
+                *option::borrow(&collectionConfig.mint_commission_receiver)
+            );
+        };
+
+        transfer::public_transfer(paymentCoin, *option::borrow(&collectionConfig.mint_payment_receiver));
+
+        let nft: NFTData = NFTData {
+            id: object::new(ctx),
+            name: string::utf8(nftName),
+            description: string::utf8(nftDescription),
+            url: url::new_unsafe_from_bytes(nftUrl),
+            attributes: attributes::from_vec(attribute_keys, attribute_values),
+            collection_id: object::id(collection)
+        };
+
+        collectionConfig.current_supply = collectionConfig.current_supply + 1;
+
+        let mintNftEvent: MintNftEvent = MintNftEvent {
+            collection_id: object::id(collection),
+            nft_id: object::id(&nft),
+            nft_owner: object::id_from_address(nftReceiverAddress),
+            with_payment: true,
+            with_commission: withCommission,
+            payment_coin_id: paymentCoinId,
+            commission_payment_coin_id: commissionPaymentCoinId
+        };
+
+        emit(mintNftEvent);
+
+        transfer::public_transfer(nft, nftReceiverAddress);
+        transfer::public_transfer(wallet, tx_context::sender(ctx));
     }
 }
